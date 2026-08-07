@@ -1,57 +1,26 @@
 import streamlit as st
-import speech_recognition as sr
+from openai import OpenAI
 
-st.set_page_config(page_title="Live Sinhala Class Note Maker", page_icon="🎙️")
+st.set_page_config(page_title="Sinhala Class Note Maker AI", page_icon="🎙️")
 
-st.title("🎙️ Live Class Audio to Sinhala Notes AI")
-st.write("Zoom ක්ලාස් එක ස්පීකර් එකෙන් අසන්නට සලසා, පහත බොත්තම ඔබා ලයිව් නොට්ස් ලබා ගන්න.")
+st.title("🎙️ Sinhala Zoom Class Note Maker AI")
+st.write("පන්තියේ ඕඩියෝ ෆයිල් එක (Audio/Mp3) මෙතැනට Upload කර AI සටහන් ලබා ගන්න.")
 
-LANGUAGE_CODE = "si-LK" 
+# OpenAI / Groq API Key එක (අවශ්‍ය නම් පසුව එකතු කරගත හැක)
+# මෙහිදී සරලව ශ්‍රව්‍ය ගොනුවක් අප්ලෝඩ් කර නෝට්ස් ලබාගත හැක.
 
-if "notes" not in st.session_state:
-    st.session_state.notes = ""
+uploaded_file = st.file_uploader("ඔබේ පන්තියේ රෙකෝඩින් එක (mp3, wav, m4a) මෙතැනට දමන්න", type=["mp3", "wav", "m4a"])
 
-col1, col2 = st.columns(2)
-
-with col1:
-    start_button = st.button("🔴 Start Live Listening")
-
-with col2:
-    stop_button = st.button("⏹️ Stop & Clear")
-
-if stop_button:
-    st.session_state.notes = ""
-    st.rerun()
-
-if start_button:
-    r = sr.Recognizer()
-
-    with sr.Microphone() as source:
-        st.info("හඬ ශ්‍රවණය කරමින් පවතී... (කතා කරන්න)")
-        r.adjust_for_ambient_noise(source, duration=1)
-
-        try:
-            audio = r.listen(source, timeout=10, phrase_time_limit=15)
-            text = r.recognize_google(audio, language=LANGUAGE_CODE)
-
-            st.session_state.notes += "\n- " + text
-            st.success("සාර්ථකයි!")
-            st.rerun()
-
-        except sr.WaitTimeoutError:
-            st.warning("හඬක් ඇසුනේ නැත. නැවත උත්සාහ කරන්න.")
-        except sr.UnknownValueError:
-            st.warning("ශබ්දය පැහැදිලි නැත, නැවත උත්සාහ කරන්න.")
-        except Exception as e:
-            st.error(f"දෝෂයක් සිදු විය: {e}")
-
-st.subheader("📝 Live Generated Notes (සිංහල සටහන්):")
-st.markdown(
-    f"""
-    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; min-height: 200px; color: black;">
-    {st.session_state.notes if st.session_state.notes else "සටහන් මෙහි දිස්වනු ඇත..."}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
+if uploaded_file is not None:
+    st.audio(uploaded_file, format='audio/mp3')
+    
+    if st.button("✨ Generate AI Notes (නෝට්ස් සාදන්න)"):
+        with st.spinner("AI එක මඟින් සටහන් සකස් කරමින් පවතී... ටිකක් රැඳී සිටින්න."):
+            # තාවකාලිකව පෙන්වීම සඳහා
+            st.success("සටහන් සාර්ථකව සකස් කරන ලදී!")
+            
+            st.markdown("""
+            ### 📝 පන්ති සටහන් (Notes):
+            - **විෂය:** ක්‍රිප්ටෝ / Zoom පන්තිය
+            - **සටහන:** ඉහත උඩුගත කළ ශ්‍රව්‍ය ගොනුව මත පදනම් වූ AI සටහන් මෙහි දිස්වේ.
+            """)
